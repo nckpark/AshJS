@@ -1,0 +1,78 @@
+<html>
+<head>
+  <title>AshteroidsJS</title>
+  <!-- Ash -->
+  <script src="../EntityList.js" type="text/javascript"></script>
+  <script src="../Signal.js" type="text/javascript"></script>
+  <script src="../Entity.js" type="text/javascript"></script>
+  <script src="../System.js" type="text/javascript"></script>
+  <script src="../Family.js" type="text/javascript"></script>
+  <script src="../NodeList.js" type="text/javascript"></script>
+  <script src="../SystemList.js" type="text/javascript"></script>
+  <script src="../Node.js" type="text/javascript"></script>
+  <script src="../Game.js" type="text/javascript"></script>
+  <!-- Easel -->
+  <script src="http://code.createjs.com/easeljs-0.5.0.min.js"></script>
+  <!-- Game -->
+  <!-- graphics -->
+  <script src = "graphics/AsteroidView.js"></script>
+  <script src = "graphics/SpaceshipView.js"></script>
+  <!-- components -->
+  <script src = "components/Asteroid.js"></script>
+  <script src = "components/Display.js"></script>
+  <script src = "components/Motion.js"></script>
+  <script src = "components/Position.js"></script>
+  <script src = "components/Collision.js"></script>
+  <script src = "components/GameState.js"></script>
+  <script src = "components/MotionControls.js"></script>
+  <script src = "components/Spaceship.js"></script>
+  <!-- nodes -->
+  <script src = "nodes/AsteroidCollisionNode.js"></script>
+  <script src = "nodes/MotionControlNode.js"></script>
+  <script src = "nodes/RenderNode.js"></script>
+  <script src = "nodes/SpaceshipNode.js"></script>
+  <script src = "nodes/GameNode.js"></script>
+  <script src = "nodes/MovementNode.js"></script>
+  <script src = "nodes/SpaceshipCollisionNode.js"></script>
+  <!-- systems -->
+  <script src = "systems/GameManager.js"></script>
+  <script src = "systems/RenderSystem.js"></script>
+  <script src = "systems/MovementSystem.js"></script>
+  <script src = "systems/MotionControlSystem.js"></script>
+  <script src = "systems/CollisionSystem.js"></script>
+  <!-- other -->
+  <script src="EntityCreator.js"></script>
+  <script src="GameConfig.js"></script>
+  <script src="systems/SystemPriorities.js"></script>
+</head>
+
+<body>
+  <canvas id = "gameCanvas" width = "600" height = "600" style = "background-color:#333;"></canvas>
+
+  <script type = "text/javascript">
+    // Prepare
+    var canvas = document.getElementById("gameCanvas");
+
+    var game = new ash.Game();
+    var creator = new EntityCreator( game );
+    var config = new GameConfig();
+    config.width = 600;
+    config.height = 600;
+
+    game.addSystem( new GameManager( creator, config ), SystemPriorities.preUpdate );
+    game.addSystem( new MotionControlSystem(), SystemPriorities.update );
+    // <!> Skipped gunControl, bulletAge, and deathThroes systems </!>
+    game.addSystem( new MovementSystem( config ), SystemPriorities.move );
+    game.addSystem( new CollisionSystem( creator ), SystemPriorities.resolveCollisions );
+    // game.addSystem( new AnimationSystem(), SystemPriorities.animate );
+    game.addSystem( new RenderSystem( canvas ), SystemPriorities.render );
+
+    creator.createGame();
+
+    // Start Ticker
+    createjs.Ticker.useRAF = true;
+    createjs.Ticker.addListener(game.update);
+  </script>
+
+</body>
+</html>
