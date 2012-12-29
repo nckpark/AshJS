@@ -19,7 +19,7 @@ function Entity() {
     var componentType = component.constructor;
     
     if( typeof components[componentType] !== "undefined" ) {
-      removeComponent(componentType);
+      this.remove(componentType);
     }
 
     components[componentType] = component;
