@@ -40,11 +40,11 @@ function Entity() {
     return components[componentType];
   }
 
-  // <?> Copies all components to an array and retusn it. Why? </?>
+  // Returns an array of all of this entity's components
   this.getAll = function() {
     var componentArray = new Array();
-    for( var component in components ) {
-      componentArray.push(component);
+    for( var type in components ) {
+      componentArray.push(components[type]);
     }
     return componentArray;
   }
