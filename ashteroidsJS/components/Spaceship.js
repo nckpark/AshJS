@@ -1,6 +1,4 @@
-(function() {
-
-function Spaceship() { }
-
-this.Spaceship = Spaceship;
-}());
+define(function() {
+	function Spaceship() { }
+	return Spaceship;
+});

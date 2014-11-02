@@ -1,89 +1,119 @@
-// namespace:
-this.ash = this.ash||{};
+//
+// ash/Entity
+// An entity is a collection of components - simple data structures storing related properties - representing
+// an object or concept used in the game.
+//
 
-(function() {
+define(["ash/Signal"], function(ashSignal) {
+  
+  function Entity() {
+  
+    // Public Properties
 
-function Entity() {
-  // Public Properties
-  this.name = new String();
-  this.id;
+    this.name = new String();
+    this.id;
 
-  // Private Properties 
-  var components = new Object();
-  var signals = {
-    componentAdded: new ash.Signal(),
-    componentRemoved: new ash.Signal()
-  };
+    // Private Properties 
+  
+    var _components = new Object();
+    var _signals = {
+      componentAdded: new ashSignal(),
+      componentRemoved: new ashSignal()
+    };
 
-  this.add = function(component) {
-    var componentType = component.constructor;
-    
-    if( typeof components[componentType] !== "undefined" ) {
-      this.remove(componentType);
-    }
-
-    components[componentType] = component;
-    signals.componentAdded.dispatch(this, componentType);
-    return this;
-  }
-
-  this.remove = function(componentType) {
-    var component = components[componentType];
-    if( typeof component !== "undefined" ) {
-      delete components[componentType];
-      signals.componentRemoved.dispatch(this, componentType);
-      return component;
-    }
-  }
-
-  this.get = function(componentType) {
-    return components[componentType];
-  }
-
-  // Returns an array of all of this entity's components
-  this.getAll = function() {
-    var componentArray = new Array();
-    for( var type in components ) {
-      componentArray.push(components[type]);
-    }
-    return componentArray;
-  }
-
-  this.has = function(componentType) {
-    return typeof components[componentType] !== "undefined";
-  }
-
-  // <!> Clone does NOT copy id. It should be undefined in the clone until added to the game, which manages unique id's </!>
-  this.clone = function() {
-    var copy = new Entity();
-    for( var component in components ) {
-      var newComponent = new component.constructor;
-      for( var property in component ) {
-        newComponent[property] = component[property];
+    // Public Methods
+  
+    // add(Object component)
+    // Adds a new component to the entity. If the entity already has a component of the added 
+    // type, it will be replaced. Triggers the entity's 'componentAdded' signal.
+    this.add = function(component) {
+      var componentType = component.constructor;
+      
+      if( typeof _components[componentType] !== "undefined" ) {
+        this.remove(componentType);
       }
-      copy.add(newComponent);
-    }
-    return copy;
-  }
 
-  this.addSubscriber = function(signalType, response) {
-    if( typeof signals[signalType] === "undefined" ) {
-      return false;
+      _components[componentType] = component;
+      _signals.componentAdded.dispatch(this, componentType);
+      return this;
     }
 
-    signals[signalType].addSubscriber(response);
-    return true;
-  }
-
-  this.removeSubscriber = function(signalType, response) {
-    if( typeof signals[signalType] === "undefined" ) {
-      return false;
+    // remove(Object Constructor componentType)
+    // Removes component of the passed type. Triggers entity's 'componentRemoved' signal. 
+    // If no matching component is found, results in a no-op. 
+    this.remove = function(componentType) {
+      var component = _components[componentType];
+      if( typeof component !== "undefined" ) {
+        delete _components[componentType];
+        _signals.componentRemoved.dispatch(this, componentType);
+        return component;
+      }
     }
 
-    signals[signalType].removeSubscriber(response);
-    return true; 
-  }
-}
+    // has(Object Constructor componentType)
+    // Returns true / false indicating whether entity contains a component of type componentType 
+    this.has = function(componentType) {
+      return typeof _components[componentType] !== "undefined";
+    }
 
-ash.Entity = Entity;
-}());
+    // get(Object Constructor componentType)
+    // Returns entity's componentType component, or undefined if entity has no components of that type.
+    this.get = function(componentType) {
+      return _components[componentType];
+    }
+
+    // getAll()
+    // Returns an array including all of this entity's components
+    this.getAll = function() {
+      var componentArray = new Array();
+      for( var type in _components ) {
+        componentArray.push(_components[type]);
+      }
+      return componentArray;
+    }
+
+    // clone()
+    // Returns a new entity with the same components and component values as this entity. Clone performs a deep 
+    // copy - all component objects are new, not references. Does not copy entity name, id, or subscribers. 
+    this.clone = function() {
+      var copy = new Entity();
+      for( var componentType in _components ) {
+        var originalComponent = _components[componentType];
+        var newComponent = new originalComponent.constructor;
+        for( var property in originalComponent ) {
+          newComponent[property] = originalComponent[property];
+        }
+        copy.add(newComponent);
+      }
+      return copy;
+    }
+
+    // addSubscriber(String signalType, function callback)
+    // Adds a subscriber function that will be called every time this entity's signalType signal is triggered.
+    // signalType should be one of 'componentAdded' or 'componentRemoved'.
+    // Returns true / false to indicate success.
+    this.addSubscriber = function(signalType, callback) {
+      if( typeof _signals[signalType] === "undefined" ) {
+        return false;
+      }
+
+      _signals[signalType].addSubscriber(callback);
+      return true;
+    }
+
+    // removeSubscriber(string signalType, function callback)
+    // Removes the previously added subscriber callback from the signalType signal.
+    // signalType sshould be one of 'componentAdded' or 'componentRemoved'.
+    // Returns true / false to indicate success.
+    this.removeSubscriber = function(signalType, callback) {
+      if( typeof _signals[signalType] === "undefined" ) {
+        return false;
+      }
+
+      _signals[signalType].removeSubscriber(callback);
+      return true; 
+    }
+  }
+
+  return Entity;
+});
